@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Factory Production Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f2f5;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #2c3e50;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-size: 22px;
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 15px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+      flex: 1 1 40%;
+      min-width: 350px;
+    }
+    h2 {
+      margin-top: 0;
+      color: #2c3e50;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background-color: #2c3e50;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    .summary {
+      font-size: 18px;
+      margin: 10px 0;
+      color: #16a085;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    🏭 Factory Production Dashboard – Hourly Updates
+  </header>
+
+  <div class="container">
+
+    <!-- Summary Card -->
+    <div class="card">
+      <h2>📊 Summary</h2>
+      <p class="summary" id="totalUnits">Total Units Today: 0</p>
+      <p class="summary" id="avgUnits">Average per Hour: 0</p>
+      <p class="summary" id="lastUpdate">Last Update: --</p>
+    </div>
+
+    <!-- Table -->
+    <div class="card">
+      <h2>⏰ Hourly Production</h2>
+      <table id="productionTable">
+        <tr>
+          <th>Hour</th>
+          <th>Units Produced</th>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Chart -->
+    <div class="card">
+      <h2>📈 Production Trend</h2>
+      <canvas id="productionChart"></canvas>
+    </div>
+    
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    let currentHour = 8;
+    let productionData = [];
+    let timeLabels = [];
+    const table = document.getElementById("productionTable");
+
+    const ctx = document.getElementById('productionChart').getContext('2d');
+    const productionChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: timeLabels,
+        datasets: [{
+          label: 'Units Produced',
+          data: productionData,
+          borderColor: 'rgba(46, 134, 222, 1)',
+          backgroundColor: 'rgba(46, 134, 222, 0.2)',
+          fill: true,
+          tension: 0.3
+        }]
+      }
+    });
+
+    function addNewHourData() {
+      let hourLabel = (currentHour < 10 ? "0" + currentHour : currentHour) + ":00 - " +
+                      (currentHour+1 < 10 ? "0" + (currentHour+1) : currentHour+1) + ":00";
+      let units = Math.floor(Math.random() * (220 - 100 + 1)) + 100;
+
+      // Table
+      let row = table.insertRow(-1);
+      row.insertCell(0).innerText = hourLabel;
+      row.insertCell(1).innerText = units;
+
+      // Chart
+      timeLabels.push(hourLabel);
+      productionData.push(units);
+      productionChart.update();
+
+      // Summary
+      let total = productionData.reduce((a,b) => a+b, 0);
+      let avg = Math.round(total / productionData.length);
+      document.getElementById("totalUnits").innerText = "Total Units Today: " + total;
+      document.getElementById("avgUnits").innerText = "Average per Hour: " + avg;
+      document.getElementById("lastUpdate").innerText = "Last Update: " + new Date().toLocaleTimeString();
+
+      currentHour++;
+      if (currentHour >= 24) currentHour = 0;
+    }
+
+    // First load
+    addNewHourData();
+    // Update every 5s (set to 3600000 for 1 hour)
+    setInterval(addNewHourData, 5000);
+  </script>
+
+</body>
+</html>
